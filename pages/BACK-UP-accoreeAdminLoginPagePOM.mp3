@@ -1,0 +1,265 @@
+import { expect } from '@playwright/test';
+
+export class AccoreeAdminLoginPagePOM {
+    constructor(page, context) {
+        this.page = page;
+        this.context = context;
+        this.screenshotCount = 0;
+        this.traceCount = 0;
+        // Web Elements Locators
+        // Main Locator
+        this.main = page.getByRole('main');
+        //Accuree Logo Form Locator
+        this.accoreLogoForm = page.locator('.w-full').first();
+        // Accoree Logo Locator
+        this.accoreeLogo = page.getByRole('img', { name: 'logo' });
+        // Accoree Login Form Locator
+        this.accoreeLoginForm = page.locator('div').filter({ hasText: 'loginEmailPlease enter your emailPasswordRemember meLogin' }).nth(1);
+        //Login Label Locator
+        this.loginLabel = page.getByText('loginEmailPlease enter your emailPasswordRemember meLogin');
+        //Email Label Locator
+        this.emailLabel = page.getByText('Email');
+        //Email Label Inside TextBox Locator
+        this.emailLabelInsideTextBox = page.getByPlaceholder('Enter your email');
+        //Email Textbox Locator
+        this.emailTextbox = page.getByPlaceholder('Enter your email');
+        //Error Email Label Below TextBox Locator
+        this.emailLabelBelowTextBox = page.getByText('Invalid Email');
+        //Password Label Locator
+        this.passwordLabel = page.getByText('Password');
+        //Password Label Inside TextBox Locator
+        this.passwordLabelInsideTextBox = page.getByPlaceholder('Enter your password');
+        //Password TextBox Locator
+        this.passwordTextbox = page.getByPlaceholder('Enter your password');
+        //Error Password Label Below TextBox Locator
+        this.passwordLabelBelowTextBox = page.getByText('Please enter your password');
+        //Remember Me Checkbox Label Locator
+        this.rememberMeCheckboxLabel = page.getByText('Remember me');
+        //Remember Me Checkbox Locator
+        this.rememberMeCheckbox = page.locator('span').first();
+        //Login Button Locator
+        this.loginButton = page.locator('div').filter({ hasText: /^Login$/ });
+
+
+        // Método para iniciar traza y screenshots
+        this.startTracingAndScreenshots = async () => {
+            try {
+                if (this.context && this.context.tracing) {
+                    // Verifica si la traza está en curso antes de intentar iniciarla
+                    if (!this.context.tracing._isTracing) {
+                        const tracePath = `./test-results/testTrace-${Date.now()}.zip`;
+                        await this.context.tracing.start({
+                            screenshots: true,
+                            snapshots: true,
+                            path: tracePath,
+                        });
+                    } else {
+                        console.log('Tracing is already in progress.');
+                    }
+                } else {
+                    throw new Error('Context or tracing not available.');
+                }
+            } catch (error) {
+                console.error('Error in startTracingAndScreenshots:', error);
+            }
+        };
+
+        // Método para detener traza
+        this.stopTracing = async () => {
+            try {
+                if (this.context && this.context.tracing) {
+                    // Verifica si la traza está en curso antes de intentar detenerla
+                    if (this.context.tracing._isTracing) {
+                        await this.context.tracing.stop();
+                    } else {
+                        console.log('Tracing is not in progress.');
+                    }
+                } else {
+                    throw new Error('Context or tracing not available.');
+                }
+            } catch (error) {
+                console.error('Error in stopTracing:', error);
+            }
+        };
+
+        // Método para tomar snapshot y screenshot
+        this.takeSnapshotAndScreenshot = async () => {
+            try {
+                const screenshotFileName = `./test-results/screenshot${this.screenshotCount++}_${Date.now()}.png`;
+                const zipFileName = `./test-results/trace${this.traceCount++}_${Date.now()}.zip`;
+                console.log('Trace path:', zipFileName);
+
+                if (this.context && this.context.tracing) {
+                    // Verifica si la traza está en curso antes de intentar detenerla
+                    if (this.context.tracing._isTracing) {
+                        await this.context.tracing.stop();
+                        console.log('Tracing stopped successfully.');
+                    }
+
+                    // Inicia una nueva traza para la siguiente captura
+                    await this.context.tracing.start({
+                        screenshots: true,
+                        snapshots: true,
+                        path: zipFileName,
+                    });
+                } else {
+                    throw new Error('Context or tracing not available.');
+                }
+
+                await this.page.screenshot({ path: screenshotFileName });
+
+                console.log(`Snapshot and screenshot taken successfully. Screenshot: ${screenshotFileName}, Trace: ${zipFileName}`);
+            } catch (error) {
+                console.error('Error in takeSnapshotAndScreenshot:', error);
+            }
+        };
+    }
+
+
+
+    // Method to go to accoree admin login page
+    async goToAccoreeAdminLoginPage() {
+        await this.page.goto('https://nsp-admin.tlcengine.com/login');
+        const currentURL = await this.page.url();
+
+        expect(currentURL).toBe('https://nsp-admin.tlcengine.com/login');
+
+        const pageTitle = await this.page.title();
+        console.log('The page title is:', pageTitle);
+
+        expect(pageTitle).toBe('Accoree Admin | Login');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+
+
+
+
+
+    // Method to validate Accoree Logo Is Visible
+    async validateAccoreeLogoIsVisible(page, context) {
+        expect(await page.getByRole('img', { name: 'logo' }).isVisible()).toBeTruthy();
+        await this.takeSnapshotAndScreenshot();
+    }
+
+
+
+    // Method to validate Login Label Is Visible
+    async validateLoginLabelIsVisible() {
+        expect(await this.loginLabel.isVisible()).toBeTruthy();
+        expect(await this.loginLabel).toHaveText('Login');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Email Label Is Visible
+    async validateEmailLabelIsVisible() {
+        expect(await this.emailLabel.isVisible()).toBeTruthy();
+        expect(await this.emailLabel).toHaveText('Email');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Email Label Inside TextBox Is Visible
+    async validateEmailLabelInsideTextBoxIsVisible() {
+        expect(await this.emailLabelInsideTextBox.isVisible()).toBeTruthy();
+        expect(await this.emailLabelInsideTextBox).toHaveText('Enter your email');
+        expect(await this.innerText(emailLabelInsideTextBox)).toBe('Enter your email');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to enter Email
+    async enterEmail(email) {
+        expect(await this.emailTextbox.isVisible()).toBe(true);
+        expect(await this.emailTextbox.isEditable()).toBe(true);
+        expect(await this.emailTextbox.inputValue()).toBe('');
+        await this.emailTextbox.click();
+        await this.emailTextbox.fill(email);
+        expect(await this.emailTextbox.inputValue()).toBe(email);
+        expect(await this.emailTextbox.innerText()).toBe('');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Email Label Below TextBox Is Visible
+    async validateEmailLabelBelowTextBoxIsVisible() {
+        expect(await this.emailLabelBelowTextBox.isVisible()).toBeTruthy();
+        expect(await this.emailLabelBelowTextBox).toContainText('Please enter your email');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Password Label Is Visible
+    async validatePasswordLabelIsVisible() {
+        expect(await this.passwordLabel.isVisible()).toBeTruthy();
+        expect(await this.passwordLabel).toContainText('Password');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Password Label Inside TextBox Is Visible
+    async validatePasswordLabelInsideTextBoxIsVisible() {
+        expect(await this.passwordLabelInsideTextBox.isVisible()).toBeTruthy();
+        expect(await this.passwordLabelInsideTextBox).toContainText('Password');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to enter Password
+    async enterPassword(password) {
+        expect(await this.passwordTextbox.isVisible()).toBeTruthy();
+        expect(await this.passwordTextbox.isEditable()).toBe(true);
+        expect(await this.passwordTextbox).toHaveValue('');
+        expect(await this.passwordTextbox.inputValue()).toBe('');
+        await this.passwordTextbox.fill(password);
+        expect(await this.passwordTextbox).toHaveText('');
+        expect(await this.passwordTextbox).toHaveValue(password);
+        expect(await this.passwordTextbox.innerText()).toBe('');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Password Label Below TextBox Is Visible
+    async validatePasswordLabelBelowTextBoxIsVisible() {
+        expect(await this.passwordLabelBelowTextBox.isVisible()).toBeTruthy();
+        expect(await this.passwordLabelBelowTextBox).toContainText('Please enter your password');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Remember Me Checkbox Label
+    async validateRememberMeCheckboxLabel() {
+        expect(await this.rememberMeCheckboxLabel.isVisible()).toBeTruthy();
+        expect(await this.rememberMeCheckboxLabel).toHaveText('Remember Me');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to click on Remember Me Checkbox
+    async clickOnRememberMeCheckbox() {
+        expect(await this.rememberMeCheckbox.isVisible()).toBeTruthy();
+        await this.rememberMeCheckbox.check();
+        //expect(await this.rememberMeCheckbox).toBeDisabled();
+        expect(await this.rememberMeCheckbox).toBeEnabled();
+        expect(await this.rememberMeCheckbox).not.toBeChecked();
+        await this.rememberMeCheckbox.click();
+        expect(await this.rememberMeCheckbox).not.toBeChecked();
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to validate Login button text
+    async validateLoginButtonText() {
+        expect(await this.loginButton.isVisible()).toBeTruthy();
+        expect(await this.loginButton).toBeDisabled();
+        expect(await this.loginButton).toBeEnabled();
+        expect(await this.loginButton).toHaveText('Login');
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    // Method to click on Login button
+    async clickOnLoginButton() {
+        expect(await this.loginButton.isVisible()).toBeTruthy();
+        expect(await this.loginButton).toBeEnabled();
+        await this.loginButton.click();
+        await this.takeSnapshotAndScreenshot();
+    }
+
+    async stopTracingAndGenerateTraceZip() {
+        if (this.context && this.context.tracing) {
+            await this.context.tracing.stop({ path: 'testTrace.zip' });
+        } else {
+            console.error('Context or tracing not available.');
+        }
+    }
+}
