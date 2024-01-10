@@ -14,9 +14,9 @@ export default defineConfig({
     ['html', { outputPath: './test-results', outputDir: './playwright-report' }],
   ],
   use: {
-    video: 'true',
+    video: 'on',
     launchOptions: {
-      slowMo: 0,
+      slowMo: 500,
     },
     trace: 'on',
   },
